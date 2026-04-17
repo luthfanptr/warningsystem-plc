@@ -1,0 +1,65 @@
+@startuml draft
+title Subsistem Notifikasi Perawatan Mesin dan Monitoring SPK
+
+actor Teknisi
+actor "Supervisor" as Spv
+control Scheduler
+boundary "Sistem (Web)" as App
+database "DB Master\n(MINA_IOT)" as DBM
+entity "DB Sistem\n(Web)" as DBA
+
+== Proses Monitoring Otomatis ==
+
+Scheduler -> App : Trigger schedule (07:00)
+
+App -> DBM : Query counter semua mesin sekaligus\nWHERE CAT_ID=4 (counter / limit)
+
+DBM --> App : Response daftar mesin\nbeserta nilai counter & limitnya
+
+App -> DBA : Cek notifikasi aktif untuk\nseluruh mesin hasil query
+
+alt Persentase >= 100% (DANGER)
+    App -> DBA : Notifikasi DANGER\nuntuk mesin-mesin tersebut
+else Persentase >= 75% (WARNING)
+    App -> DBA : Notifikasi WARNING\nuntuk mesin-mesin tersebut
+end
+
+DBA -> App : Menampilkan notifikasi mesin hasil query
+
+
+App -> Teknisi : Mengirimkan notifikasi via email ke akun teknisi
+
+== Login Teknisi ==
+
+Teknisi -> App : login (email, password)
+App -> DBM : Validasi kredensial plant & line assignment
+DBM --> App : Data plant + role + line assignment
+
+App -> DBA : Request notifikasi sesuai line teknisi
+DBA -->App: Response list notifikasi
+App -> App :Tentukan status SPK
+App --> Teknisi : Menampilkan list notifikasi
+Teknisi -> App : Update progress SPK
+App -> App : Validasi request
+alt SPK belum ada / masih proses
+    App -> DBA: Update SPK_status = "PROGRESS"
+else SPK selesai
+    App -> DBA : Update SPK_status = "DONE"
+end
+
+== Monitoring Supervisor ==
+
+Spv -> App : Buka dashboard monitoring
+
+App -> DBM : Get data plant, line, mesin
+DBM --> App : Data mesin per plant
+
+App -> DBA : Get PLC_STATUS
+DBA --> App : Status mesin (WARNING/DANGER, SPK)
+
+App -> App : Gabungkan data mesin + status
+
+App --> Spv : Tampilkan list mesin per plant
+
+
+@enduml

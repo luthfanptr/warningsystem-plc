@@ -1,0 +1,31 @@
+@startuml draftUC
+
+left to right direction
+actor Teknisi as T
+actor Supervisor as Spv 
+actor "<<System>>" as Sys
+
+package "Dashboard" {
+    usecase "Lihat daftar notifikasi mesin\nsesuai dengan line " as UC1
+    usecase "Update status\n SPK" as UC2
+
+    usecase "Monitoring semua line" as UC3
+    usecase "Run scheduler manual" as UC4
+    usecase "Buat notifikasi via email" as UC5
+    usecase "Run scheduler otomatis" as UC6
+    usecase "Lihat semua data mesin" as UC7
+}
+
+T --> UC1 
+
+UC1 ..> UC2 : <<include>>
+UC4 ..> UC5 : <<extends>>
+
+Spv --> UC3
+Spv -> UC4
+UC3 ..> UC7 : <<include>>
+
+Sys --> UC6
+UC6 ..> UC5 : <<extends>>
+
+@enduml

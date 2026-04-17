@@ -1,0 +1,60 @@
+@startuml df
+|Sistem|
+start
+:Menjalankan scheduler otomatis\n(setiap pukul 07:00);
+repeat :Membaca data PLC;
+
+:Query dengan kondisi WARNING/DANGER\n(counter >= limit dari DB_Master);
+
+if (Ada yang memenuhi kondisi?) then (Ya)
+
+    :Cek notifikasi untuk mesin-mesin tersebut;
+
+    if (Sudah ada notifikasi?) then (Ya)
+
+        if (Status SPK = DONE?) then (Ya)
+            
+            :Tidak ada aksi lanjutan;
+            stop
+
+        else (Tidak)
+            
+            :Perbarui status mesin jika\nada perubahan;
+            
+        endif
+            
+    else (Tidak)
+    
+    endif
+    
+    :Buat notifikasi\n(via email);
+    
+else (Tidak)
+    :Tidak ada aksi;
+endif
+    
+|Teknisi|
+
+:Login ke dashboard;
+:Melihat daftar notifikasi mesin\n(sesuai dengan line);
+
+if (SPK sudah ada?) then (Ya)
+
+    |Sistem|
+    :Update status SPK = DONE;
+
+else (Tidak)
+
+    |Sistem|
+    :Update status SPK = PROGRESS;
+
+endif
+|Teknisi|
+
+|Supervisor|
+
+repeat while (Run scheduler manual) is (Ya) not (Tidak) 
+:Monitoring semua line\n(status dan SPK);
+
+stop
+@enduml
