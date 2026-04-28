@@ -25,7 +25,7 @@ class ControlPanelProvider extends PanelProvider
     {
         return $panel
             ->id('control')
-            ->path('control')
+            ->path('')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
